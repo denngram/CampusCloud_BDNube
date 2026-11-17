@@ -1,0 +1,103 @@
+services:
+#=================================
+# POSTGRESQL
+#================================
+  postgres-cloud:
+    image: postgres:16-bookworm
+    container_name: campuscloud-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - campuscloud_net
+
+    healthcheck:
+      test: 
+       [
+       "CMD-SHELL",
+       "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+       ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+#=================================
+# PGADMIN
+#================================
+  pgadmin:
+    image: dpage/pgadmin4:6.17
+    container_name: campuscloud-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    
+    depends_on:
+      postgres-cloud:
+        condition: service_healthy
+
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - campuscloud_net
+
+#=================================
+# MONGODB
+#================================
+  mongodb:
+    image: mongo:8.0.8-noble
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "${MONGO_PORT}:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - campuscloud_net
+
+#=================================
+# MONGO EXPRESS
+#================================
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_ENABLED: "false"
+    ports:
+      - "${MONGO_EXPRESS_PORT}:8081"
+    depends_on:
+      - mongodb
+    networks:
+      - campuscloud_net
+
+#=================================
+# VOLUMES
+#================================
+volumes:
+  postgres_data:
+  pgadmin_data:
+  mongo_data:
+  
+#=================================
+# RED
+#================================ 
+networks:
+  campuscloud_net:
+    external: true
+    name: ${DOCKER_NETWORK}
+
+

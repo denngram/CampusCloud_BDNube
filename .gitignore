@@ -1,2 +1,22 @@
-.env 
-* .log
+# Variables de Entorno
+.env
+.env.*
+**/.env
+!.env.example
+!**/.env.example
+
+# Archivos de registro y temporales
+*.log
+*.tmp
+
+# Dependencias y pruebas
+node_modules/
+coverage/
+
+# Volúmenes de bases de datos y empaquetados 
+**/data/
+*.zip
+
+# Notas personales
+notasgenerales.mdss
+
