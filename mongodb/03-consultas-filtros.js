@@ -6,3 +6,4 @@ printjson(db.detalles_servicios.find({ activo: true, costo_mensual: { $lt: 500 }
 
 print("--- 3. CONSULTA: Búsqueda por característica específica ---");
 printjson(db.detalles_servicios.find({ caracteristicas: "Alta disponibilidad" }).toArray());
+
